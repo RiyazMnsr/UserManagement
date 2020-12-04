@@ -3,6 +3,7 @@ package com.example.user.service;
 import com.example.user.constant.ErrorMessage;
 import com.example.user.dto.User;
 import com.example.user.service.jsonprovider.UserGatewayImpl;
+import com.example.user.util.UserListUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -21,7 +22,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -40,16 +40,9 @@ public class UserGatewayTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void getUserList_from_gateway_success() {
+    public void getUserListFromGatewaySuccess() {
 
-        User firstUser = new User(1, 1, "Test First User", "Test First User");
-        User secondUser = new User(1, 2, "Test Second User", "Test Second User");
-        User thirdUser = new User(1, 3, "Test Third User", "Test Third User");
-        User fourthUser = new User(2, 4, "Test Fourth User", "Test Fourth User");
-        User fifthUser = new User(2, 5, "Test Fifth User", "Test Fifth User");
-        User sixthUser = new User(2, 6, "Test Six User", "Test Sixth User");
-
-        List<User> users = Arrays.asList(firstUser, secondUser, thirdUser, fourthUser, fifthUser, sixthUser);
+        List<User> users = UserListUtil.buildUserList();
 
         ResponseEntity<List<User>> responseEntity = new ResponseEntity<List<User>>(users, HttpStatus.OK);
 
@@ -63,12 +56,12 @@ public class UserGatewayTest {
         List<User> updatedUser = userGateway.getUserList();
         assertAll(
                 () -> Assertions.assertNotNull(updatedUser),
-                () -> Assertions.assertTrue(updatedUser.size() == 6)
+                () -> Assertions.assertEquals(updatedUser.size(), users.size())
         );
     }
 
     @Test
-    public void getUserList_from_gateway_fail() {
+    public void getUserListFromGatewayFail() {
 
         Mockito.when(apiGatewayRestTemplate.exchange(
                 ArgumentMatchers.anyString(),

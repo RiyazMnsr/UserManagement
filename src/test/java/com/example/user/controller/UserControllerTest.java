@@ -1,6 +1,7 @@
 package com.example.user.controller;
 
 import com.example.user.dto.User;
+import com.example.user.dto.UserCountResponse;
 import com.example.user.service.user.UserService;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 public class UserControllerTest {
 
+    private static final String countUrl = "/users/count";
+    private static final String listUrl = "/users";
+
     private MockMvc mockMvc;
 
     @InjectMocks
@@ -47,27 +51,25 @@ public class UserControllerTest {
 
     @Test
     public void testCount() throws Exception {
-        String url = "/users/count";
 
-        Map<String , Integer> responseMap = Collections.emptyMap();
+        UserCountResponse response = new UserCountResponse();
 
         // Pass
         given(userService.countUniqueUsers())
-                .willReturn(responseMap);
-        mockMvc.perform(get(url)
+                .willReturn(response);
+        mockMvc.perform(get(countUrl)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void testupdate() throws Exception {
-        String url = "/users";
 
         List<User> responseMap = Collections.emptyList();
         // Pass
         given(userService.getUpdatedUser())
                 .willReturn(responseMap);
-        mockMvc.perform(get(url)
+        mockMvc.perform(get(listUrl)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

@@ -3,8 +3,10 @@ package com.example.user.service.user;
 import com.example.user.constant.ApplicationConstant;
 import com.example.user.constant.ErrorMessage;
 import com.example.user.dto.User;
+import com.example.user.dto.UserCountResponse;
 import com.example.user.exception.UserNotFoundException;
 import com.example.user.service.jsonprovider.UserGateway;
+import com.example.user.util.UtilMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,18 +32,30 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserGateway userGateway;
 
+    /**
+     *
+     * @return count of unique userId
+     * Create stream of list and filter the user by unique userId
+     */
     @Override
-    public Map<String, Integer> countUniqueUsers() {
+    public UserCountResponse countUniqueUsers() {
 
+        logger.info("countUniqueUsers start");
         List<User> users = userGateway.getUserList();
 
-        List<User> distinctElements = users.stream().filter(distinctByKey(User::getUserId))
+        List<User> distinctElements = users.stream().filter(UtilMethods.distinctByKey(User::getUserId))
                 .collect(Collectors.toList());
-        Map<String, Integer> response = new HashMap<>();
-        response.put("count", distinctElements.size());
-        return response;
+        UserCountResponse countResponse = new UserCountResponse();
+        countResponse.setCount(distinctElements.size());
+        logger.debug("Response : {}", countResponse);
+        return countResponse;
     }
 
+    /**
+     *
+     * @return updated user list
+     * Create stream of list and filter the requested user by id for update properties value
+     */
     @Override
     public List<User> getUpdatedUser() {
 
@@ -60,10 +74,5 @@ public class UserServiceImpl implements UserService {
                 });
 
         return users;
-    }
-
-    private static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
-        Map<Object, Boolean> map = new ConcurrentHashMap<>();
-        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 }

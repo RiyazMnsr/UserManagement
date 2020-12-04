@@ -1,5 +1,6 @@
 package com.example.user.controller;
 
+import com.example.user.error.UserError;
 import com.example.user.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 @ControllerAdvice
@@ -23,27 +22,19 @@ public class ExceptionHandlingController {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException ex) {
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getLocalizedMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+        UserError userError = new UserError(LocalDateTime.now(), ex.getLocalizedMessage());
+        return new ResponseEntity<>(userError, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Object> handleRunTimeException(RuntimeException ex) {
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("message", ex.getLocalizedMessage());
-
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+        UserError userError = new UserError(LocalDateTime.now(), ex.getLocalizedMessage());
+        return new ResponseEntity<>(userError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity handle(ConstraintViolationException constraintViolationException) {
-        Set<ConstraintViolation<?>> violations = constraintViolationException.getConstraintViolations();
+    public ResponseEntity handle(ConstraintViolationException ex) {
+        Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
         String errorMessage = "";
         if (!violations.isEmpty()) {
             StringBuilder builder = new StringBuilder();
@@ -52,7 +43,7 @@ public class ExceptionHandlingController {
         } else {
             errorMessage = "ConstraintViolationException occured.";
         }
-        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+        UserError userError = new UserError(LocalDateTime.now(), errorMessage);
+        return new ResponseEntity<>(userError, HttpStatus.BAD_REQUEST);
     }
-
 }

@@ -2,9 +2,11 @@ package com.example.user.service;
 
 import com.example.user.constant.ErrorMessage;
 import com.example.user.dto.User;
+import com.example.user.dto.UserCountResponse;
 import com.example.user.exception.UserNotFoundException;
 import com.example.user.service.jsonprovider.UserGatewayImpl;
 import com.example.user.service.user.UserServiceImpl;
+import com.example.user.util.UserListUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -15,12 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 
@@ -37,18 +37,10 @@ public class UserServiceTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-
     @Test
-    public void getUpdatedUser_success() {
+    public void getUpdatedUserSuccess() {
 
-        User firstUser = new User(1, 1, "Test First User", "Test First User");
-        User secondUser = new User(1, 2, "Test Second User", "Test Second User");
-        User thirdUser = new User(1, 3, "Test Third User", "Test Third User");
-        User fourthUser = new User(2, 4, "Test Fourth User", "Test Fourth User");
-        User fifthUser = new User(2, 5, "Test Fifth User", "Test Fifth User");
-        User sixthUser = new User(2, 6, "Test Six User", "Test Sixth User");
-
-        List<User> users = Arrays.asList(firstUser, secondUser, thirdUser, fourthUser, fifthUser, sixthUser);
+        List<User> users = UserListUtil.buildUserList();
 
         given(userGateway.getUserList()).willReturn(users);
 
@@ -56,46 +48,34 @@ public class UserServiceTest {
 
         assertAll(
                 () -> Assertions.assertNotNull(updatedUser),
-                () -> Assertions.assertTrue(updatedUser.size() == 6),
-                () -> Assertions.assertEquals(fourthUser.getId(), updatedUser.get(3).getId()),
-                () -> Assertions.assertEquals("1800Flowers",updatedUser.get(3).getTitle()),
+                () -> Assertions.assertEquals(updatedUser.size(), users.size()),
+                () -> Assertions.assertEquals(users.get(3).getId(), updatedUser.get(3).getId()),
+                () -> Assertions.assertEquals("1800Flowers", updatedUser.get(3).getTitle()),
                 () -> Assertions.assertEquals("1800Flowers", updatedUser.get(3).getBody())
         );
     }
 
     @Test
-    public void getUpdatedUser_only_three_user_failed() {
+    public void getUpdatedUserOnlyThreeUserFailed() {
 
-        User firstUser = new User(1, 1, "Test First User", "Test First User");
-        User secondUser = new User(1, 2, "Test Second User", "Test Second User");
-        User thirdUser = new User(1, 3, "Test Third User", "Test Third User");
-
-        List<User> users = Arrays.asList(firstUser, secondUser, thirdUser);
+        List<User> users = UserListUtil.buildUserListWithThreeUser();
         given(userGateway.getUserList()).willReturn(users);
 
         thrown.expect(UserNotFoundException.class);
         thrown.expectMessage(ErrorMessage.NO_USER_FOUND);
 
         userService.getUpdatedUser();
-
     }
 
     @Test
-    public void getCount_success() {
+    public void getCountSuccess() {
 
-        User firstUser = new User(1, 1, "Test First User", "Test First User");
-        User secondUser = new User(1, 2, "Test Second User", "Test Second User");
-        User thirdUser = new User(1, 3, "Test Third User", "Test Third User");
-        User fourthUser = new User(2, 4, "Test Fourth User", "Test Fourth User");
-        User fifthUser = new User(2, 5, "Test Fifth User", "Test Fifth User");
-        User sixthUser = new User(2, 6, "Test Six User", "Test Sixth User");
-
-        List<User> users = Arrays.asList(firstUser, secondUser, thirdUser, fourthUser, fifthUser, sixthUser);
+        List<User> users = UserListUtil.buildUserList();
         given(userGateway.getUserList()).willReturn(users);
-        Map<String, Integer> uniqueNo = userService.countUniqueUsers();
+        UserCountResponse response = userService.countUniqueUsers();
         assertAll(
-                () -> Assertions.assertNotNull(uniqueNo),
-                () -> Assertions.assertEquals(uniqueNo.get("count"), 2)
+                () -> Assertions.assertNotNull(response),
+                () -> Assertions.assertEquals(response.getCount(), 2)
         );
     }
 }

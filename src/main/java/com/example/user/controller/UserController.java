@@ -1,6 +1,7 @@
 package com.example.user.controller;
 
 import com.example.user.dto.User;
+import com.example.user.dto.UserCountResponse;
 import com.example.user.service.user.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +25,22 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     *
+     * @return count of unique userId
+     */
     @GetMapping
     @RequestMapping("/users/count")
     public ResponseEntity countUniqueUser() {
-        Map<String, Integer> response = userService.countUniqueUsers();
+        UserCountResponse response = userService.countUniqueUsers();
         return new ResponseEntity(response, HttpStatus.OK);
 
     }
 
+    /**
+     *
+     * @return updated user list
+     */
     @GetMapping
     @RequestMapping("/users")
     public ResponseEntity getUpdatedUser() {
